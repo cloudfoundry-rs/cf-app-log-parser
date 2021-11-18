@@ -7,7 +7,6 @@ The scripts in this repository provide simple, ready to use container images to 
 
 > If you're only interested in the deployment examples, head to [`Deployment`](#deployment)
 
-
 ## Usage options
 
 There are (mainly) two options of usage:
@@ -104,19 +103,114 @@ RUN sh /src/custom-sinks/my-sink/install.sh
 > For a full example have a look at the [`examples/extended`](./examples/extended) example.
 
 ## Deployment
-<!---
-This section handles a basic deployment to cloud foundry but you can also handle a deployment to k8s or any container environment.
 
+The follwing deployment example will use vector forwarding the results to `elasticsearch` and `s3`. For more examples have a look at [examples/](`./examples`)
 
+For this to work we will need to create the two services
 
-- manifest
-- services
-- push
+Creating your services will highly depend on your host. it will look something like this:
+```sh
+cf create-service elasticsearch huge vector-elasticsearch
+```
 
+Here comes s3:
+```sh
+cf create-service s3 fast vector-s3
+```
+
+And lastly our login credentials:
+```sh
+cf create-user-provided-service vector-auth -p '{"username":"admin","password":"pa55woRD"}'
+```
+> Depending on your provider, user provided service instances may not be the best way to handle credentials
+
+Done that, you can go ahead and create your deployment manifest.
+
+Your `manifest.yml` should look something like this:
+```yml
+applications: # TODO healthchecks
+    - name: vector
+      memory: 64MB # depending on your setup 64MB should be enough to cover sudden spikes
+      instances: 3 # to your liking and load, a autoscaler can be added
+      docker:
+        image: chweicki/cf-vector:0.1.0-elasticsearch-s3 # uses the prebuilt image
+      env:
+        INGEST_AUTH_STRATEGY: "basic" # see the paragraph "Deployment" for details
+        INGEST_AUTH_SERVICE_NAME: "vector-auth" # see the paragraph "Deployment" for details
+        S3_BUCKET_NAME: "logs"
+        ELASTICSEARCH_INDEX: "logs-%Y-%m-%d"
+      services:
+        - vector-s3 # s3 service
+        - vector-elasticsearch # elastcisearch service
+        - vector-auth # see the paragraph "Deployment" for details
+      routes:
+       - route: vector.example.io # exposed at this route
+```
+
+To deploy that, save it and run:
+```
+cf push
+```
+
+Once the app is deployed and ready you can go ahead and register it as a log destination in your space.
+```
+cf create-user-provided-service vector-log-drain -l https://admin:pa55woRD@vector.example.io
+```
+
+Now you are able to bind that service to your own app
+```
+cf bind-service my-app vector-log-drain
+```
+
+Congrats :beer: you deployed an instance of this parser and your apps logs will be forwarded to it by cloudfoundry
 
 A word about scaling: Yes it does!
-- scaling bot
--->
+
+<details>
+<summary>Follow these steps to deploy an autoscaler</summary>
+
+Cloud foundry supports auto scaling via the [autoscaler service](https://github.com/cloudfoundry/app-autoscaler/blob/main/docs/Readme.md)
+
+You need to create a autoscaler service, depending on your provider this service may be called a bit different.
+```sh
+cf create-service autoscaler free vector-scaler
+```
+
+You can edit the following configuration to your liking:
+```json
+{
+  "instance_min_count": 1,
+  "instance_max_count": 10,
+  "scaling_rules": [
+    {
+      "metric_type": "memoryutil",
+      "breach_duration_secs": 600,
+      "threshold": 30,
+      "operator": "<",
+      "cool_down_secs": 300,
+      "adjustment": "-1"
+    },
+    {
+      "metric_type": "memoryutil",
+      "breach_duration_secs": 600,
+      "threshold": 80,
+      "operator": ">=",
+      "cool_down_secs": 300,
+      "adjustment": "+1"
+    }
+  ]
+}
+```
+
+> Depending on your host you can use `cpu` as a metric or `throughput`. If you are in the need to add them you should already be an advanced user and aware of your deployment environment. Since these two parameter are not always allowed and highly depend on your infrastructure giving here a general template which works out of the box is impossible. Use your cf knowlage.
+
+That config can be applied by binding the service:
+```sh
+cf bind-service vector vector-scaler -c ./vector-policy.json
+```
+
+Done :tada:
+</details>
 
 ## The App
 
@@ -124,25 +218,47 @@ A word about scaling: Yes it does!
 
 You may store configurations or keys in other services or need to parse something to configure this image.
 
-At the start of the container the entrypoint will execute all bash files in `/entrypoints/`. For example have a look at [`scripts/basic.sh`](./scripts/basic.sh) or and other file in the scripts folder.
+At the start of the container the entrypoint will execute all bash files in `/entrypoints/`. For example have a look at [`scripts/setup.sh`](./scripts/setup.sh) or and other file in the scripts folder.
 
 If you are using the generic image, that where all the sinks will be bundeled together
 
 
 
 #### Ingest
-Cloud foundry only allows `https` which is terminated by your cf ingres and forwarded as `http` traffic. The Parser exposes a http endpoint at `$PORT` which is defined by the cf runtime.
+Cloud foundry only allows `https` which is terminated by your cf ingres and forwarded as `http` traffic. The Parser exposes a http endpoint at `0.0.0.0:$PORT` which is defined by the cf runtime.
 
 The ingest endpoint is either protected by bearer token validation or basic authentication. 
 
 Use the following env variables for setup:
 - Use `INGEST_AUTH_STRATEGY` to set it up as `basic` or `bearer`
+
+If you would like to configure your crendentials manually via env variables:
 - Use `INGEST_AUTH_PASSWORD` and `INGEST_AUTH_USERNAME` to set the password and username for `basic` authentication
 - Use `INGEST_AUTH_TOKEN` to set the token for bearer token validation with `bearer` authentication
 
+Or if you would like to use a cf service (such as a credential service):
+- Use `INGEST_AUTH_SERVICE_NAME` to specify the name of the service
+
+#### Parsing
 Data received will then be parsed by the main [parsing logic](./config/parsing/baisc.toml) as described on [the cloud foundry docs page for app logging](https://docs.cloudfoundry.org/devguide/deploy-apps/streaming-logs.html)
 
 
-Input:
+Your cf instance send the following to vector:
+```log
+2020-01-13T16:12:25.86-0800 [APP/PROC/WEB/0] OUT app instance exceeded log rate limit (100 log-lines/sec) set by platform operator
+2016-06-14T13:44:38.14-0700 [CELL/0]     OUT Successfully created container
+2016-06-14T14:16:11.49-0700 [SSH/0]      OUT Successful remote access by 192.0.2.33:7856
+2016-06-14T14:10:15.18-0700 [APP/0]      OUT Exit status 0
+2016-06-14T14:10:05.36-0700 [API/0]      OUT Updated app with guid cdabc600-0b73-48e1-b7d2-26af2c63f933 ({"name"=>"spring-music", "instances"=>1, "memory"=>512, "environment_json"=>"PRIVATE DATA HIDDEN"})
+2016-06-14T14:10:27.91-0700 [STG/0]      OUT Staging...
+```
 
-Output:
+Once parsed the following will be forwarded:
+```text
+```
+
+#### Result forwarding
+
+After processing your data will be forwarded to a sink. Configuring your sinks highly dependy on their configuration options.
+
+To make sure you're good with your setup head to your sinks README file i.e. [the s3 sink readme](./config/sinks/s3/README.md)

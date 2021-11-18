@@ -1,0 +1,6 @@
+2020-01-13T16:12:25.86-0800 [APP/PROC/WEB/0] OUT app instance exceeded log rate limit (100 log-lines/sec) set by platform operator
+2016-06-14T13:44:38.14-0700 [CELL/0]     OUT Successfully created container
+2016-06-14T14:16:11.49-0700 [SSH/0]      OUT Successful remote access by 192.0.2.33:7856
+2016-06-14T14:10:15.18-0700 [APP/0]      OUT Exit status 0
+2016-06-14T14:10:05.36-0700 [API/0]      OUT Updated app with guid cdabc600-0b73-48e1-b7d2-26af2c63f933 ({"name"=>"spring-music", "instances"=>1, "memory"=>512, "environment_json"=>"PRIVATE DATA HIDDEN"})
+2016-06-14T14:10:27.91-0700 [STG/0]      OUT Staging...
