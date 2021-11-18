@@ -1,8 +1,12 @@
 # Cloudfoundry App Log Parser
 
+Are you in need for a simple, extendable but robust solution to parse and forward your logs from clouf foundry? This repository has you covered (probably).
+
 The scripts in this repository provide simple, ready to use container images to parse and store your cloud foundry apps logs and very low ressource usage using [vector](https://vector.dev)
 
 > If you're only interested in the deployment examples, head to [`Deployment`](#deployment)
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/somehowchris/cloudfoundry-app-log-parser)
 
 ## Usage options
 
