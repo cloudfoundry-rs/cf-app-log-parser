@@ -272,6 +272,7 @@ Your cf instance send the following to vector:
 
 Once parsed the following will be forwarded:
 ```text
+// TODO export example output
 ```
 
 #### Result forwarding
