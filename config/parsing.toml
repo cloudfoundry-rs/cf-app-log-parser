@@ -1,0 +1,99 @@
+# Ingest
+[sources.http_syslogs]
+  type = "http"
+  address = "0.0.0.0:${PORT}"
+
+# Transform
+[transforms]
+    [message]
+    type = "grok_parser"
+    inputs = ["http_syslogs"]
+    field = "message"
+    pattern = "%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP_ISO8601:syslog5424_ts}|-) +(?:%{DATA:syslog5424_host}|-) +(?:%{NOTSPACE:syslog5424_app}|-) +(?:%{NOTSPACE:syslog5424_proc}|-) +(?:%{WORD:syslog5424_msgid}|-) +(?:%{SYSLOG5424SD:syslog5424_sd}|-|)%{SPACE}%{GREEDYDATA:message}"
+
+    [syslog5424_proc]
+    type = "grok_parser"
+    inputs = ["message"]
+    field = "syslog5424_proc"
+    pattern = "^\\[(%{WORD:cf_component})?/.+\\]$"
+
+    [cf_component_rtr]
+    type = "filter"
+    inputs = ["syslog5424_proc"]
+    condition = ".cf_component == \"RTR\""
+
+    [cf_component_not_rtr]
+    type = "filter"
+    inputs = ["syslog5424_proc"]
+    condition = ".cf_component != \"RTR\""
+
+    [rtr_message]
+    type = "grok_parser"
+    inputs = ["cf_component_rtr"]
+    field = "message"
+    drop_field = true
+    pattern = "%{HOSTNAME:host} - \\[%{TIMESTAMP_ISO8601}\\] \\\"%{WORD:http_method} %{DATA:http_uri} HTTP/%{NUMBER:http_version}\\\" %{POSINT:http_response} %{NONNEGINT:http_request_size} %{NONNEGINT:http_response_size} \\\"%{DATA:referrer}\\\" \\\"%{DATA:user_agent}\\\" \\\"%{IPORHOST:ip_source}:%{POSINT:ip_source_port}\\\" \\\"%{IPORHOST:ip_destination}:%{POSINT:ip_destination_port}\\\" x_forwarded_for\\:\\\"%{DATA:x_forwarded_for}\\\" x_forwarded_proto:\\\"%{DATA:x_forwarded_proto}\\\" vcap_request_id:\\\"%{UUID:vcap_request_id}\\\" response_time:%{NUMBER:response_time} gorouter_time:%{NUMBER:gorouter_time} app_id:\\\"%{UUID:app_id}\\\" app_index:\\\"%{NONNEGINT:app_index}\\\"( x_cf_routererror:\\\"%{DATA:error}\\\")? x_b3_traceid:\\\"%{DATA:x_b3_traceid}\\\" x_b3_spanid:\\\"%{DATA:x_b3_spanid}\\\" x_b3_parentspanid:\\\"%{DATA:x_b3_parentspanid}\\\" b3:\\\"%{DATA:b3}\\\""
+
+    [cf_component_not_app]
+    type = "filter"
+    inputs = ["rtr_message", "cf_component_not_rtr"]
+    condition = ".cf_component != \"APP\""
+
+    [cf_component_app]
+    type = "filter"
+    inputs = ["rtr_message", "cf_component_not_rtr"]
+    condition = "cf_component == \"APP\""
+
+    [cf_component_app_json_message_condition]
+    type = "filter"
+    inputs = ["cf_component_app"]
+    condition = "starts_with!(.message, \"{\") && ends_with!(.message, \"}\")"
+
+    [cf_component_log_json]
+    type = "json_parser"
+    inputs = ["cf_component_app_json_message_condition"]
+    drop_field = true
+    field = "message"
+
+    [app_log_raw]
+    type = "filter"
+    inputs = ["cf_component_app"]
+    condition = "exists(.message) && ((starts_with!(.message, \"{\") == false) || (ends_with!(.message, \"}\") == false))"
+
+    [syslog_proc_parser_contidion]
+    type = "filter"
+    inputs = ["app_log_raw", "cf_component_not_app", "cf_component_log_json"]
+    condition = "exists(.syslog5424_proc)"
+
+    [syslog_proc_parser]
+    type = "grok_parser"
+    inputs = ["syslog_proc_parser_contidion"]
+    field = "syslog5424_proc"
+    pattern = "^\\[APP/PROC/WEB/(%{INT:cf_app_instance_index})?\\]$"
+
+    [syslog_proc_parser_not_condition]
+    type = "filter"
+    inputs = ["app_log_raw", "cf_component_not_app", "cf_component_log_json"]
+    condition = "exists(.syslog5424_proc)"
+
+    [syslog_host_parser]
+    type = "grok_parser"
+    inputs = ["syslog_proc_parser", "syslog_proc_parser_not_condition"]
+    field = "syslog5424_host"
+    pattern = "^%{DATA:cf_org}\\.%{DATA:cf_space}\\.%{DATA:cf_app}?$"
+
+    [timetamp_not_available_condition]
+    type = "filter"
+    inputs = ["syslog_host_parser"]
+    condition = "exists(.timestamp) && !exists(.@timestamp)"
+
+    [timestamp_parsed]
+    type = "concat"
+    inputs = ["timetamp_not_available_condition"]
+    items = ["timestamp"]
+    target = "@timestamp"
+
+    [timestamp_pre_parsed]
+    type = "filter"
+    inputs = ["syslog_host_parser"]
+    condition = "exists(.@timestamp)"
