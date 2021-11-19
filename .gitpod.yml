@@ -1,3 +1,17 @@
+# List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
+tasks:
+  - name: Docker
+    init: docker build .
+    command: exit
+  - name: Local deps
+    init: |
+      sudo apt update -y
+      sudo apt upgrade -y
+      sudo apt install jq yq curl wget
+    command: |
+      sudo apt update -y
+      sudo apt upgrade -y
+      exit
 
 vscode:
   extensions:
