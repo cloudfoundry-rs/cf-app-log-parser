@@ -4,9 +4,17 @@
   address = "0.0.0.0:${PORT}"
 
 # Transform
+[transforms.env_info]
+inputs = ["http_syslogs"]
+type   = "remap"
+source = '''
+.parser.CF_INSTANCE_GUID, err = get_env_var("CF_INSTANCE_GUID")
+.parser.CF_INSTANCE_INDEX, err = get_env_var("CF_INSTANCE_INDEX")
+'''
+
 [transforms.message]
 type = "grok_parser"
-inputs = ["http_syslogs"]
+inputs = ["env_info"]
 field = "message"
 pattern = "%{SYSLOG5424PRI}%{NONNEGINT:syslog5424_ver} +(?:%{TIMESTAMP_ISO8601:syslog5424_ts}|-) +(?:%{DATA:syslog5424_host}|-) +(?:%{NOTSPACE:syslog5424_app}|-) +(?:%{NOTSPACE:syslog5424_proc}|-) +(?:%{WORD:syslog5424_msgid}|-) +(?:%{SYSLOG5424SD:syslog5424_sd}|-|)%{SPACE}%{GREEDYDATA:message}"
 
