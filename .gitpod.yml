@@ -1,3 +1,4 @@
+---
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
 tasks:
   - name: Docker
@@ -16,3 +17,5 @@ tasks:
 vscode:
   extensions:
     - bierner.markdown-preview-github-styles
+    - bungcip.better-toml
+    - tamasfe.even-better-toml

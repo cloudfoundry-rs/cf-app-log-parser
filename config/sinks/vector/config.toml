@@ -1,0 +1,7 @@
+[sinks.vector]
+type = "vector"
+inputs = ["timestamp_pre_parsed", "timestamp_parsed"]
+healthcheck = { enabled = true }
+
+address="${VECTOR_ADDRESS}"
+version="${VECTOR_VERSION}"

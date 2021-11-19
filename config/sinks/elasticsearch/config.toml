@@ -1,0 +1,8 @@
+[sinks.elasticsearch]
+type = "elasticsearch"
+inputs = ["timestamp_pre_parsed", "timestamp_parsed"]
+healthcheck = { enabled = true }
+
+endpoint = "${ELASTICSEARCH_ENDPOINT}"
+index = "${ELASTICSEARCH_INDEX}"
+mode = "${ELASTICSEARCH_MODE}"

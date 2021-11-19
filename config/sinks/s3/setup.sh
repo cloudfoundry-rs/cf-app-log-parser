@@ -39,4 +39,24 @@ else
     echo "No authentication for s3 found"
 fi
 
+if [[ ! -z "$S3_ACL" ]];
+then
+    dasel put string -f $CONFIG_PATH sinks.s3.auth.assume_role "$S3_ACL"
+fi
+
+if [[ ! -z "$S3_AUTH_ASSUME_ROLE" ]];
+then
+    dasel put string -f $CONFIG_PATH sinks.s3.auth.assume_role "$S3_AUTH_ASSUME_ROLE"
+fi
+
+if [[ ! -z "$S3_AUTH_CREDENTIALS_FILE" ]];
+then
+    dasel put string -f $CONFIG_PATH sinks.s3.auth.credentials_file "$S3_AUTH_CREDENTIALS_FILE"
+fi
+
+if [[ ! -z "$S3_AUTH_PROFILE" ]];
+then
+    dasel put string -f $CONFIG_PATH sinks.s3.auth.profile "$S3_AUTH_PROFILE"
+fi
+
 check_env_vars "S3_BUCKET_NAME" "S3_KEY_PREFIX" "S3_REGION"
