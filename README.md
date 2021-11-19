@@ -8,19 +8,20 @@ The scripts in this repository provide simple, ready to use container images to 
 > If you're only interested in the deployment examples, head to [`Deployment`](#deployment)
 
 ### Table of contents
-1. [Cloudfoundry App Log Parser](#cloudfoundry-app-log-parser)
-  1. [Usage options](#usage-options)
-        1. [Parser Only](#parser-only)
-        2. [Parse and Store](#parse-and-store)
-            1. [Prebuilt images](#prebuilt-images)
-            2. [Generic image](#generic-image)
-            3. [Extending the base image](#extending-the-base-image)
-  2. [Deployment](#deployment)
-  3. [The App](#the-app)
-      1. [App Start](#app-start)
-      2. [Ingest](#ingest)
-      3. [Parsing](#parsing)
-      4. [Result forwarding](#result-forwarding)
+- [Cloudfoundry App Log Parser](#cloudfoundry-app-log-parser)
+    - [Table of contents](#table-of-contents)
+  - [Usage options](#usage-options)
+    - [Parser Only](#parser-only)
+    - [Parse and Store](#parse-and-store)
+      - [Prebuilt images](#prebuilt-images)
+      - [Generic image](#generic-image)
+      - [Extending the base image](#extending-the-base-image)
+  - [Deployment](#deployment)
+  - [The App](#the-app)
+      - [App Start](#app-start)
+      - [Ingest](#ingest)
+      - [Parsing](#parsing)
+      - [Result forwarding](#result-forwarding)
 
 
 

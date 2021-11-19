@@ -1,12 +1,10 @@
 #!/bin/bash
 
-if [[ -z "$S3_COMPRESSION" ]];
-then
+if [[ -z "$S3_COMPRESSION" ]]; then
     echo "Using default compression \"gzip\" for the s3 sink"
     export S3_COMPRESSION="gzip"
 else
-    if [[ $S3_COMPRESSION == "none" || $S3_COMPRESSION == "gzip" ]];
-    then
+    if [[ $S3_COMPRESSION == "none" || $S3_COMPRESSION == "gzip" ]]; then
         echo "Using user specified compression $S3_COMPRESSION"
     else
         echo "Specified console compression $S3_COMPRESSION is not allowed"
@@ -14,13 +12,11 @@ else
     fi
 fi
 
-if [[ -z "$S3_ENCODING" ]];
-then
+if [[ -z "$S3_ENCODING" ]]; then
     echo "Using default encoding \"text\" for the s3 sink"
     export S3_ENCODING="text"
 else
-    if [[ $S3_ENCODING == "text" || $S3_ENCODING == "ndjson" ]];
-    then
+    if [[ $S3_ENCODING == "text" || $S3_ENCODING == "ndjson" ]]; then
         echo "Using user specified encoding $S3_ENCODING"
     else
         echo "Specified s3 encoding $S3_ENCODING is not allowed"
@@ -28,8 +24,7 @@ else
     fi
 fi
 
-if [[ ! -z "$S3_ACCESS_KEY"  || ! -z "$S3_SECRET_ACCESS_KEY" ]];
-then
+if [[ ! -z "$S3_ACCESS_KEY" || ! -z "$S3_SECRET_ACCESS_KEY" ]]; then
     check_env_vars "S3_ACCESS_KEY" "S3_SECRET_ACCESS_KEY"
     echo "Using access key and secret for s3 authentication"
 
@@ -39,23 +34,19 @@ else
     echo "No authentication for s3 found"
 fi
 
-if [[ ! -z "$S3_ACL" ]];
-then
+if [[ ! -z "$S3_ACL" ]]; then
     dasel put string -f $CONFIG_PATH sinks.s3.auth.assume_role "$S3_ACL"
 fi
 
-if [[ ! -z "$S3_AUTH_ASSUME_ROLE" ]];
-then
+if [[ ! -z "$S3_AUTH_ASSUME_ROLE" ]]; then
     dasel put string -f $CONFIG_PATH sinks.s3.auth.assume_role "$S3_AUTH_ASSUME_ROLE"
 fi
 
-if [[ ! -z "$S3_AUTH_CREDENTIALS_FILE" ]];
-then
+if [[ ! -z "$S3_AUTH_CREDENTIALS_FILE" ]]; then
     dasel put string -f $CONFIG_PATH sinks.s3.auth.credentials_file "$S3_AUTH_CREDENTIALS_FILE"
 fi
 
-if [[ ! -z "$S3_AUTH_PROFILE" ]];
-then
+if [[ ! -z "$S3_AUTH_PROFILE" ]]; then
     dasel put string -f $CONFIG_PATH sinks.s3.auth.profile "$S3_AUTH_PROFILE"
 fi
 

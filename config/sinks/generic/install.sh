@@ -2,11 +2,9 @@
 
 mkdir -p "/entrypoints/generic/"
 
-for sink in sinks/*;
-do
+for sink in sinks/*; do
     sink=${sink#"sinks/"}
-    if [[ sink != "generic" ]];
-    then
+    if [[ sink != "generic" ]]; then
         cp -rv "sinks/$sink" "/entrypoints/generic/"
     else
         echo "Leaving out generic to install itself"
@@ -15,4 +13,4 @@ done
 
 BASE_DIR=$1
 
-cp $BASE_DIR/setup.sh /entrypoints/4_generic.sh
+cp "$BASE_DIR/setup.sh" /entrypoints/4_generic.sh

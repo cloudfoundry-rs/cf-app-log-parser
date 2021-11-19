@@ -3,14 +3,29 @@ name: ci
 on:
   push:
     branches:
-      - 'main'
+      - "main"
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        bundle: ["", "blackhole", "console", "s3", "console,s3", "generic", "elasticsearch", "vector", "vector,s3", "vector,elasticsearch", "s3,elasticsearch", "elasticsearch,console", "vector,console"]
+        bundle:
+          [
+            "",
+            "blackhole",
+            "console",
+            "s3",
+            "console,s3",
+            "generic",
+            "elasticsearch",
+            "vector",
+            "vector,s3",
+            "vector,elasticsearch",
+            "s3,elasticsearch",
+            "elasticsearch,console",
+            "vector,console",
+          ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2

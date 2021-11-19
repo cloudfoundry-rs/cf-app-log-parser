@@ -1,12 +1,12 @@
 # Ingest
 [sources.http_syslogs]
-  type = "http"
-  address = "0.0.0.0:${PORT}"
+type = "http"
+address = "0.0.0.0:${PORT}"
 
 # Transform
 [transforms.env_info]
 inputs = ["http_syslogs"]
-type   = "remap"
+type = "remap"
 source = '''
 .parser.CF_INSTANCE_GUID, err = get_env_var("CF_INSTANCE_GUID")
 .parser.CF_INSTANCE_INDEX, err = get_env_var("CF_INSTANCE_INDEX")

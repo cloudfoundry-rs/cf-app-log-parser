@@ -3,13 +3,13 @@
 BASE_DIR=$1
 
 # install config
-echo "" >> $CONFIG_PATH
-echo "" >> $CONFIG_PATH
+echo "" >>$CONFIG_PATH
+echo "" >>$CONFIG_PATH
 
-cat $BASE_DIR/config.toml >> $CONFIG_PATH
+cat "$BASE_DIR/config.toml" >>$CONFIG_PATH
 
 # install entrypoint
-cp $BASE_DIR/setup.sh /entrypoints/5_sink_s3.sh
+cp "$BASE_DIR/setup.sh" /entrypoints/5_sink_s3.sh
 
 # export values for validation only
 export S3_COMPRESSION=gzip
