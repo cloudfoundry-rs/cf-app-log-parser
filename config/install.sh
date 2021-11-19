@@ -61,7 +61,7 @@ do
     install_sink $sink_to_install
 done
 
-if [[ $SINK_COUNT -gt 0 ]];
+if [[ $SINK_COUNT -gt 0 && $INCLUDED_SINKS != "generic" ]];
 then
     PORT=8080 vector validate $CONFIG_PATH --no-environment --deny-warnings
 fi

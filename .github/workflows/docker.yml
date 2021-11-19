@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        bundle: ["", "blackhole", "console", "s3", "console,s3"]
+        bundle: ["", "blackhole", "console", "s3", "console,s3", "generic"]
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 env() {
     arg=$1
     shift
