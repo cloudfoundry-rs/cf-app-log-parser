@@ -145,7 +145,7 @@ Done that, you can go ahead and create your deployment manifest.
 
 Your `manifest.yml` should look something like this:
 ```yml
-applications: # TODO healthchecks
+applications:
     - name: vector
       memory: 64MB # depending on your setup 64MB should be enough to cover sudden spikes
       instances: 3 # to your liking and load, a autoscaler can be added
@@ -162,6 +162,7 @@ applications: # TODO healthchecks
         - vector-auth # see the paragraph "Deployment" for details
       routes:
        - route: vector.example.io # exposed at this route
+      health-check-type: port # vector offers a healthcheck endpoint but not on the port the parser exposes
 ```
 
 To deploy that, save it and run:

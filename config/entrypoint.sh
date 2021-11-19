@@ -23,7 +23,7 @@ check_env_vars () {
     if [ ! -z "$NAMES" ];
     then
         echo "Environemnt variable(s) $NAMES should not be empty"
-        exit
+        exit 1
     fi
 }
 
