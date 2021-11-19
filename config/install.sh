@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 count_items () (
   IFS=','
   set -f
@@ -34,7 +36,7 @@ install_sink () {
     does_sink_exist $1
 
     echo "Installing sink \"$1\""
-    . "sinks/$1/install.sh"
+    . "sinks/$1/install.sh" "sinks/$1/"
 }
 
 IFS=','
@@ -58,3 +60,8 @@ for sink_to_install in $INCLUDED_SINKS;
 do
     install_sink $sink_to_install
 done
+
+if [[ $SINK_COUNT -gt 0 ]];
+then
+    PORT=8080 vector validate $CONFIG_PATH --no-environment --deny-warnings
+fi

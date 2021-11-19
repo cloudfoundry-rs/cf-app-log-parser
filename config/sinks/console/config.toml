@@ -1,0 +1,5 @@
+[sinks.console]
+type = "console"
+inputs = [ "timestamp_pre_parsed", "timestamp_parsed" ]
+target = "${CONSOLE_TARGET}"
+encoding = "${CONSOLE_ENCODING}"

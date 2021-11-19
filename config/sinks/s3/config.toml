@@ -1,0 +1,8 @@
+[sinks.s3]
+type = "aws_s3"
+inputs = [ "timestamp_pre_parsed", "timestamp_parsed" ]
+bucket = "${S3_BUCKET_NAME}"
+key_prefix = "${S3_KEY_PREFIX}"
+compression = "${S3_COMPRESSION}"
+region = "${S3_REGION}"
+encoding.codec="${S3_ENCODING}"
