@@ -1,7 +1,7 @@
 ARG INCLUDED_SINKS
 ARG CONFIG_PATH=/etc/vector/vector.toml
 
-FROM timberio/vector:0.31.0-alpine as build
+FROM timberio/vector:0.35.0-alpine as build
 
 ARG INCLUDED_SINKS
 ARG CONFIG_PATH
@@ -24,7 +24,7 @@ RUN mkdir -p /entrypoints/
 RUN sh ./install.sh
 
 
-FROM timberio/vector:0.31.0-alpine
+FROM timberio/vector:0.35.0-alpine
 
 ARG CONFIG_PATH
 ENV CONFIG_PATH=$CONFIG_PATH
